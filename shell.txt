@@ -1,0 +1,1 @@
+./projeto 4 1000 arqA.dat arqB.dat arqC.dat arqD.dat arqE.dat
