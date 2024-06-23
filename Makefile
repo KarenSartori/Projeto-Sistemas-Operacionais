@@ -10,12 +10,12 @@ TARGET = projeto
 # Lista de arquivos fonte
 SRC = projetoSO.c
 
-# Regra padrão
-all: $(TARGET)
-
 # Regra para criar o executável
 $(TARGET): $(SRC)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
+
+# Regra padrão
+all: $(TARGET)
 
 # Limpeza dos arquivos compilados
 clean:
