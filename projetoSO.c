@@ -28,8 +28,8 @@ void freeMatriz(Matriz matriz) {
     free(matriz.dados);
 }
 
-void leituraMatriz(Matriz *matriz, const char *nome_arquivo) {
-    FILE *arquivo = fopen(nome_arquivo, "r");
+void leituraMatriz(Matriz *matriz, const char *nomeArquivo) {
+    FILE *arquivo = fopen(nomeArquivo, "r");
     if (!arquivo) {
         perror("Erro ao abrir arquivo");
         exit(EXIT_FAILURE);
@@ -37,7 +37,7 @@ void leituraMatriz(Matriz *matriz, const char *nome_arquivo) {
     for (int i = 0; i < matriz->n; i++) {
         for (int j = 0; j < matriz->n; j++) {
             if (fscanf(arquivo, "%d", &matriz->dados[i * matriz->n + j]) != 1) {
-                fprintf(stderr, "Erro ao ler o valor da matriz no arquivo %s\n", nome_arquivo);
+                fprintf(stderr, "Erro ao ler o valor da matriz no arquivo %s\n", nomeArquivo);
                 fclose(arquivo);
                 exit(EXIT_FAILURE);
             }
@@ -46,8 +46,8 @@ void leituraMatriz(Matriz *matriz, const char *nome_arquivo) {
     fclose(arquivo);
 }
 
-void gravarMatriz(Matriz *matriz, const char *nome_arquivo) {
-    FILE *arquivo = fopen(nome_arquivo, "w");
+void gravarMatriz(Matriz *matriz, const char *nomeArquivo) {
+    FILE *arquivo = fopen(nomeArquivo, "w");
     if (!arquivo) {
         perror("Erro ao abrir arquivo");
         exit(EXIT_FAILURE);
@@ -61,8 +61,8 @@ void gravarMatriz(Matriz *matriz, const char *nome_arquivo) {
     fclose(arquivo);
 }
 
-void limparArq(const char *nome_arquivo) {
-    FILE *arquivo = fopen(nome_arquivo, "w");
+void limparArquivo(const char *nomeArquivo) {
+    FILE *arquivo = fopen(nomeArquivo, "w");
     if (!arquivo) {
         perror("Erro ao abrir arquivo para limpeza");
         exit(EXIT_FAILURE);
@@ -80,22 +80,22 @@ void* somaMatrizes_thread(void *arg) {
     return NULL;
 }
 
-void somaMatrizes(Matriz *A, Matriz *B, Matriz *D, int num_threads) {
-    pthread_t threads[num_threads];
-    DadosThread dados_thread[num_threads];
-    int linhas_por_thread = A->n / num_threads;
+void somaMatrizes(Matriz *A, Matriz *B, Matriz *D, int numeroThreads) {
+    pthread_t threads[numeroThreads];
+    DadosThread dadosThread[numeroThreads];
+    int linhasPorThread = A->n / numeroThreads;
 
-    for (int i = 0; i < num_threads; i++) {
-        dados_thread[i].A = A;
-        dados_thread[i].B = B;
-        dados_thread[i].resultado = D;
-        dados_thread[i].linhaComeco = i * linhas_por_thread;
-        dados_thread[i].linhaFinal = (i == num_threads - 1) ? A->n : (i + 1) * linhas_por_thread;
-        dados_thread[i].n = A->n;
-        pthread_create(&threads[i], NULL, somaMatrizes_thread, &dados_thread[i]);
+    for (int i = 0; i < numeroThreads; i++) {
+        dadosThread[i].A = A;
+        dadosThread[i].B = B;
+        dadosThread[i].resultado = D;
+        dadosThread[i].linhaComeco = i * linhasPorThread;
+        dadosThread[i].linhaFinal = (i == numeroThreads - 1) ? A->n : (i + 1) * linhasPorThread;
+        dadosThread[i].n = A->n;
+        pthread_create(&threads[i], NULL, somaMatrizes_thread, &dadosThread[i]);
     }
 
-    for (int i = 0; i < num_threads; i++) {
+    for (int i = 0; i < numeroThreads; i++) {
         pthread_join(threads[i], NULL);
     }
 }
@@ -113,22 +113,22 @@ void* multiplicacaoMatrizes_thread(void *arg) {
     return NULL;
 }
 
-void multiplicacaoMatrizes(Matriz *C, Matriz *D, Matriz *E, int num_threads) {
-    pthread_t threads[num_threads];
-    DadosThread dados_thread[num_threads];
-    int linhas_por_thread = C->n / num_threads;
+void multiplicacaoMatrizes(Matriz *C, Matriz *D, Matriz *E, int numeroThreads) {
+    pthread_t threads[numeroThreads];
+    DadosThread dadosThread[numeroThreads];
+    int linhasPorThread = C->n / numeroThreads;
 
-    for (int i = 0; i < num_threads; i++) {
-        dados_thread[i].A = C;
-        dados_thread[i].B = D;
-        dados_thread[i].resultado = E;
-        dados_thread[i].linhaComeco = i * linhas_por_thread;
-        dados_thread[i].linhaFinal = (i == num_threads - 1) ? C->n : (i + 1) * linhas_por_thread;
-        dados_thread[i].n = C->n;
-        pthread_create(&threads[i], NULL, multiplicacaoMatrizes_thread, &dados_thread[i]);
+    for (int i = 0; i < numeroThreads; i++) {
+        dadosThread[i].A = C;
+        dadosThread[i].B = D;
+        dadosThread[i].resultado = E;
+        dadosThread[i].linhaComeco = i * linhasPorThread;
+        dadosThread[i].linhaFinal = (i == numeroThreads - 1) ? C->n : (i + 1) * linhasPorThread;
+        dadosThread[i].n = C->n;
+        pthread_create(&threads[i], NULL, multiplicacaoMatrizes_thread, &dadosThread[i]);
     }
 
-    for (int i = 0; i < num_threads; i++) {
+    for (int i = 0; i < numeroThreads; i++) {
         pthread_join(threads[i], NULL);
     }
 }
@@ -173,39 +173,39 @@ int main(int argc, char *argv[]) {
     leituraMatriz(&B, arqB);
     leituraMatriz(&C, arqC);
 
-    limparArq(arqD); 
-    limparArq(arqE); 
+    limparArquivo(arqD); 
+    limparArquivo(arqE); 
 
     double inicio, fim;
-    double inicio_total, fim_total;
+    double tempoInicio, tempoFinal;
 
-    inicio_total = calcularTempo();
+    tempoInicio = calcularTempo();
 
     inicio = calcularTempo();
     somaMatrizes(&A, &B, &D, T);
     fim = calcularTempo();
-    double tempo_soma = fim - inicio;
+    double tempoSoma = fim - inicio;
     gravarMatriz(&D, arqD);
 
     inicio = calcularTempo();
     multiplicacaoMatrizes(&C, &D, &E, T);
     fim = calcularTempo();
-    double tempo_multiplicacao = fim - inicio;
+    double tempoMultiplicacao = fim - inicio;
     gravarMatriz(&E, arqE);
 
     inicio = calcularTempo();
     int resultado_reducao = reducaoMatriz(&E);
     fim = calcularTempo();
-    double tempo_reducao = fim - inicio;
+    double tempoReducao = fim - inicio;
 
-    fim_total = calcularTempo();
-    double tempo_total = fim_total - inicio_total;
+    tempoFinal = calcularTempo();
+    double tempoTotal = tempoFinal - tempoInicio;
 
     printf("Redução: %d\n", resultado_reducao);
-    printf("Tempo soma: %.6f segundos.\n", tempo_soma);
-    printf("Tempo multiplicação: %.6f segundos.\n", tempo_multiplicacao);
-    printf("Tempo redução: %.6f segundos.\n", tempo_reducao);
-    printf("Tempo total: %.6f segundos.\n", tempo_total);
+    printf("Tempo soma: %.6f segundos.\n", tempoSoma);
+    printf("Tempo multiplicação: %.6f segundos.\n", tempoMultiplicacao);
+    printf("Tempo redução: %.6f segundos.\n", tempoReducao);
+    printf("Tempo total: %.6f segundos.\n", tempoTotal);
 
     freeMatriz(A);
     freeMatriz(B);
